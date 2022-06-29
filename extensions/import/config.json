@@ -6,6 +6,7 @@
 		"Windows_64": "win-x64.zip",
 		"Windows_86": "win-x86.zip",
 		"OSX": "osx.tar.gz",
+		"OSX_ARM64": "osx.tar.gz",
 		"Linux_64": "linux-x64.tar.gz",
 		"CentOS_7": "linux-x64.tar.gz",
 		"Debian_8": "linux-x64.tar.gz",
