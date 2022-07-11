@@ -352,6 +352,8 @@ export async function getOrDownloadServer(config: IConfig, handleServerEvent?: (
 			// 	}
 			// }
 			// console.warn(`Could not find valid SQL Tools Service EXE from ${JSON.stringify(config.executableFiles)} at ${stsRootPath}, falling back to config`);
+			const overrideMessage = `Using SqlToolsService from ${stsRootPath}`;
+			void vscode.window.showInformationMessage(overrideMessage);
 			return stsRootPath;
 		}
 	} catch (err) {
