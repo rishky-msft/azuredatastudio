@@ -1310,6 +1310,10 @@ declare module 'azdata' {
 			 * Warning/parallelism badges applicable to the current node
 			 */
 			badges: ExecutionPlanBadge[];
+			/**
+			 * Data to show in top operations table for the node.
+			 */
+			topOperationsData: TopOperationsDataItem[];
 		}
 
 		export interface ExecutionPlanBadge {
@@ -1475,6 +1479,21 @@ declare module 'azdata' {
 			 */
 			compareExecutionPlanGraph(firstPlanFile: ExecutionPlanGraphInfo, secondPlanFile: ExecutionPlanGraphInfo): Thenable<ExecutionPlanComparisonResult>;
 		}
+
+		export interface TopOperationsDataItem {
+			/**
+			 * Column name for the top operation data item
+			 */
+			columnName: string;
+			/**
+			 * Cell data type for the top operation data item
+			 */
+			dataType: ExecutionPlanGraphElementPropertyDataType;
+			/**
+			 * Cell value for the top operation data item
+			 */
+			displayValue: string | number | boolean;
+		}
 	}
 
 	/**
@@ -1524,6 +1543,13 @@ declare module 'azdata' {
 		 * Link that is clicked
 		 */
 		link: LinkArea;
+	}
+
+	export interface TextComponentProperties {
+		/**
+		 * Corresponds to the aria-live accessibility attribute for this component
+		 */
+		ariaLive?: string;
 	}
 
 	export interface ContainerBuilder<TComponent extends Component, TLayout, TItemLayout, TPropertyBag extends ContainerProperties> extends ComponentBuilder<TComponent, TPropertyBag> {
@@ -1586,5 +1612,13 @@ declare module 'azdata' {
 			 */
 			onQueryEvent(type: QueryEventType, document: QueryDocument, args: ResultSetSummary | string | undefined, queryInfo: QueryInfo): void;
 		}
+	}
+
+	export interface NodeInfo {
+		/**
+		 * The object type of the node. Node type is used to determine the icon, the object type is the actual type of the node, e.g. for Tables node
+		 * under the database, the nodeType is Folder, the objectType is be Tables.
+		 */
+		objectType?: string;
 	}
 }

@@ -58,6 +58,7 @@ export class PublishDatabaseDialog {
 	private serverName: string | undefined;
 	protected optionsButton: azdataType.ButtonComponent | undefined;
 	private publishOptionsDialog: PublishOptionsDialog | undefined;
+	public publishOptionsModified: boolean = false;
 
 	private completionPromise: Deferred = new Deferred();
 
@@ -146,7 +147,7 @@ export class PublishDatabaseDialog {
 			const displayOptionsButton = this.createOptionsButton(view);
 
 			const horizontalFormSection = view.modelBuilder.flexContainer().withLayout({ flexFlow: 'column' }).component();
-			horizontalFormSection.addItems([profileRow, this.databaseRow, displayOptionsButton]);
+			horizontalFormSection.addItems([profileRow, this.databaseRow]);
 
 			this.formBuilder = <azdataType.FormBuilder>view.modelBuilder.formContainer()
 				.withFormItems([
@@ -170,6 +171,10 @@ export class PublishDatabaseDialog {
 								title: constants.selectConnectionRadioButtonsTitle,
 								component: selectConnectionRadioButtons
 							},*/
+							{
+								component: displayOptionsButton,
+								title: ''
+							}
 						]
 					}
 				], {
@@ -291,7 +296,6 @@ export class PublishDatabaseDialog {
 			// We only use the dialog in ADS context currently so safe to cast to the mssql DeploymentOptions here
 			this.deploymentOptions = await utils.getDefaultPublishDeploymentOptions(this.project) as DeploymentOptions;
 		}
-
 		return this.deploymentOptions;
 	}
 
@@ -829,6 +833,9 @@ export class PublishDatabaseDialog {
 					this.targetDatabaseName = result.databaseName;
 				}
 
+				// set options coming from the publish profiles to deployment options
+				this.setDeploymentOptions(result.options);
+
 				if (Object.keys(result.sqlCmdVariables).length) {
 					// add SQLCMD Variables table if it wasn't there before and the profile had sqlcmd variables
 					if (Object.keys(this.project.sqlCmdVariables).length === 0 && Object.keys(<Record<string, string>>this.sqlCmdVars).length === 0) {
@@ -907,12 +914,12 @@ export class PublishDatabaseDialog {
 	 */
 	private createOptionsButton(view: azdataType.ModelView): azdataType.FlexContainer {
 		this.optionsButton = view.modelBuilder.button().withProps({
-			label: constants.publishingOptions,
+			label: constants.AdvancedOptionsButton,
 			secondary: true,
 			width: cssStyles.PublishingOptionsButtonWidth
 		}).component();
 
-		const optionsRow = view.modelBuilder.flexContainer().withItems([this.optionsButton], { CSSStyles: { flex: '0 0 auto', 'margin': '6px 0 0 287px' } }).withLayout({ flexFlow: 'row', alignItems: 'center' }).component();
+		const optionsRow = view.modelBuilder.flexContainer().withItems([this.optionsButton], { CSSStyles: { flex: '0 0 auto', 'margin': '-8px 0 0 307px' } }).withLayout({ flexFlow: 'row', alignItems: 'center' }).component();
 
 		this.toDispose.push(this.optionsButton.onDidClick(async () => {
 			TelemetryReporter.sendActionEvent(TelemetryViews.SqlProjectPublishDialog, TelemetryActions.publishOptionsOpened);
@@ -928,7 +935,12 @@ export class PublishDatabaseDialog {
 	* Gets the default deployment options from the dacfx service
 	*/
 	public async getDefaultDeploymentOptions(): Promise<DeploymentOptions> {
-		return await utils.getDefaultPublishDeploymentOptions(this.project) as DeploymentOptions;
+		const defaultDeploymentOptions = await utils.getDefaultPublishDeploymentOptions(this.project) as DeploymentOptions;
+		if (defaultDeploymentOptions && defaultDeploymentOptions.excludeObjectTypes !== undefined) {
+			// For publish dialog no default exclude options should exists
+			defaultDeploymentOptions.excludeObjectTypes.value = [];
+		}
+		return defaultDeploymentOptions;
 	}
 
 	/*
