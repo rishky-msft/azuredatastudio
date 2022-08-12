@@ -151,8 +151,7 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 		} else if (this._tsgopsweb) {
 			this._pythonInstallationPath = `/usr`;
 			this._usingExistingPython = true;
-		}
-		else {
+		} else {
 			this._pythonInstallationPath = JupyterServerInstallation.getPythonInstallPath();
 			this._usingExistingPython = JupyterServerInstallation.getExistingPythonSetting();
 			this._virtualEnvName = JupyterServerInstallation.getVirtualEnvSetting();
