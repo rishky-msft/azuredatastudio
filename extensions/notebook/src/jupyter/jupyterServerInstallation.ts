@@ -117,6 +117,7 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 	private _usingExistingPython: boolean;
 	private _usingConda: boolean;
 	private _installedPythonVersion: string;
+	private _virtualEnvName: string;
 
 	private _upgradeInProcess: boolean = false;
 	private _oldPythonExecutable: string | undefined;
@@ -455,6 +456,7 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 
 		this._pythonInstallationPath = installSettings.installPath;
 		this._usingExistingPython = installSettings.existingPython;
+		this._virtualEnvName = installSettings.virtualEnvironment;
 		await this.configurePackagePaths();
 
 		azdata.tasks.startBackgroundOperation({
@@ -773,6 +775,13 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 			environments.push(envName);
 		}
 		return environments;
+	}
+
+	public async activateVirtualEnv(): Promise<void> {
+		if (this._usingConda) {
+			let condaExe = this.getCondaExePath(this._pythonInstallationPath);
+			await this.executeBufferedCommand(`${condaExe} activate ${this._virtualEnvName}`);
+		}
 	}
 
 	/**

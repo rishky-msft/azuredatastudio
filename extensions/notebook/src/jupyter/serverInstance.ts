@@ -219,6 +219,7 @@ export class PerFolderServerInstance implements IServerInstance {
 
 		// Execute the command
 		await this.executeStartCommand(startCommand);
+		await this.options.install.activateVirtualEnv();
 		sendNotebookActionEvent(NbTelemetryView.Jupyter, NbTelemetryAction.JupyterServerStarted, { pythonVersion: this.options.install.installedPythonVersion, usingExistingPython: String(JupyterServerInstallation.getExistingPythonSetting()), usingConda: String(this.options.install.usingConda) });
 	}
 
