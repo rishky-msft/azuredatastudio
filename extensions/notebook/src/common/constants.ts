@@ -15,6 +15,7 @@ export const notebookCommandNew = 'notebook.command.new';
 // JUPYTER CONFIG //////////////////////////////////////////////////////////
 export const pythonVersion = '3.8.10';
 export const pythonPathConfigKey = 'pythonPath';
+export const virtualEnvConfigKey = 'virtualEnvironment';
 export const existingPythonConfigKey = 'useExistingPython';
 export const dontPromptPythonUpdate = 'dontPromptPythonUpdate';
 export const jupyterServerShutdownTimeoutConfigKey = 'jupyterServerShutdownTimeout';

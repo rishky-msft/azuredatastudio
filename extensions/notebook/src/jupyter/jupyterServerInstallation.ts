@@ -155,6 +155,7 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 		else {
 			this._pythonInstallationPath = JupyterServerInstallation.getPythonInstallPath();
 			this._usingExistingPython = JupyterServerInstallation.getExistingPythonSetting();
+			this._virtualEnvName = JupyterServerInstallation.getVirtualEnvSetting();
 		}
 		this._usingConda = false;
 		this._installInProgress = false;
@@ -469,6 +470,7 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 						let notebookConfig = vscode.workspace.getConfiguration(constants.notebookConfigKey);
 						await notebookConfig.update(constants.pythonPathConfigKey, this._pythonInstallationPath, vscode.ConfigurationTarget.Global);
 						await notebookConfig.update(constants.existingPythonConfigKey, this._usingExistingPython, vscode.ConfigurationTarget.Global);
+						await notebookConfig.update(constants.virtualEnvConfigKey, this._virtualEnvName, vscode.ConfigurationTarget.Global);
 						await this.configurePackagePaths();
 
 						this._installCompletion.resolve();
@@ -791,6 +793,15 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 	public static getPythonInstallPath(): string {
 		let userPath = JupyterServerInstallation.getPythonPathSetting();
 		return userPath ? userPath : JupyterServerInstallation.DefaultPythonLocation;
+	}
+
+	public static getVirtualEnvSetting(): string {
+		let virtualEnvName: string;
+		let notebookConfig = vscode.workspace.getConfiguration(constants.notebookConfigKey);
+		if (notebookConfig) {
+			virtualEnvName = notebookConfig[constants.virtualEnvConfigKey];
+		}
+		return virtualEnvName;
 	}
 
 	public static getExistingPythonSetting(): boolean {
