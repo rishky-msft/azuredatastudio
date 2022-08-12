@@ -20,6 +20,8 @@ export class ConfigurePathPage extends BasePage {
 	private pythonDropdownLoader: azdata.LoadingComponent;
 	private newInstallButton: azdata.RadioButtonComponent;
 	private existingInstallButton: azdata.RadioButtonComponent;
+	private virtualEnvDropdown: azdata.DropDownComponent;
+	private virtualEnvLoader: azdata.LoadingComponent;
 
 	private selectInstallEnabled: boolean;
 	private usingCustomPath: boolean = false;
@@ -122,6 +124,32 @@ export class ConfigurePathPage extends BasePage {
 			this.selectInstallEnabled = true;
 		}
 
+		this.virtualEnvDropdown = this.view.modelBuilder.dropDown().component();
+		let dropdownForm = this.view.modelBuilder.formContainer().withFormItems([{
+			title: localize('configurePython.virtualEnvironments', "Virtual Environments"),
+			component: this.virtualEnvDropdown
+		}]).component();
+		this.virtualEnvLoader = this.view.modelBuilder.loadingComponent().withItem(dropdownForm).component();
+		let dropdownContainer = this.view.modelBuilder.divContainer().withItems([this.virtualEnvLoader]).component();
+		dropdownContainer.display = 'none';
+		this.pythonLocationDropdown.onValueChanged(async value => {
+			this.virtualEnvLoader.loading = true;
+			try {
+				let selection = this.pythonLocationDropdown.values[value.index] as azdata.CategoryValue;
+				let environments = await this.model.installation.getCondaVirtualEnv(selection.name);
+				this.virtualEnvDropdown.values = environments;
+				if (environments.length > 0) {
+					dropdownContainer.display = 'block';
+				} else {
+					dropdownContainer.display = 'none';
+				}
+			} finally {
+				this.virtualEnvLoader.loading = false;
+			}
+		});
+		allParentItems.push(dropdownContainer);
+
+
 		let parentContainer = this.view.modelBuilder.flexContainer()
 			.withLayout({ flexFlow: 'column' }).component();
 		parentContainer.addItem(wizardDescriptionLabel, {
@@ -141,7 +169,7 @@ export class ConfigurePathPage extends BasePage {
 	}
 
 	public async onPageLeave(): Promise<boolean> {
-		if (this.pythonDropdownLoader.loading) {
+		if (this.pythonDropdownLoader.loading || this.virtualEnvLoader.loading) {
 			return false;
 		}
 		if (this.selectInstallEnabled) {
@@ -154,9 +182,11 @@ export class ConfigurePathPage extends BasePage {
 			this.model.pythonLocation = pythonLocation;
 			this.model.useExistingPython = !!this.existingInstallButton.checked;
 			this.model.packageUpgradeOnly = false;
+			this.model.virtualEnvironment = this.virtualEnvDropdown.value as string;
 		} else {
 			this.model.packageUpgradeOnly = true;
 		}
+
 		return true;
 	}
 

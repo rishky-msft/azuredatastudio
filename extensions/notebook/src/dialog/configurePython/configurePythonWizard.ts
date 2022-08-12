@@ -24,6 +24,7 @@ export interface ConfigurePythonModel {
 	packagesToInstall: PythonPkgDetails[];
 	installation: JupyterServerInstallation;
 	packageUpgradeOnly: boolean;
+	virtualEnvironment: string;
 }
 
 export class ConfigurePythonWizard {
@@ -177,7 +178,8 @@ export class ConfigurePythonWizard {
 			installPath: pythonLocation,
 			existingPython: useExistingPython,
 			packages: this.model.packagesToInstall,
-			packageUpgradeOnly: this.model.packageUpgradeOnly
+			packageUpgradeOnly: this.model.packageUpgradeOnly,
+			virtualEnvironment: this.model.virtualEnvironment
 		};
 		this.jupyterInstallation.startInstallProcess(false, installSettings)
 			.then(() => {

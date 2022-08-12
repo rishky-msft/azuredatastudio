@@ -49,6 +49,7 @@ export interface PythonInstallSettings {
 	existingPython: boolean;
 	packages: PythonPkgDetails[];
 	packageUpgradeOnly?: boolean;
+	virtualEnvironment?: string;
 }
 export interface IJupyterServerInstallation {
 	/**
@@ -714,8 +715,8 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 		return this._pythonExecutable;
 	}
 
-	public getCondaExePath(): string {
-		return path.join(this._pythonInstallationPath,
+	public getCondaExePath(pythonPath?: string): string {
+		return path.join(pythonPath ?? this._pythonInstallationPath,
 			process.platform === constants.winPlatform ? 'Scripts\\conda.exe' : 'bin/conda');
 	}
 
@@ -734,8 +735,8 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 		return this._installedPythonVersion;
 	}
 
-	private isCondaInstalled(): boolean {
-		let condaExePath = this.getCondaExePath();
+	private isCondaInstalled(pythonPath?: string): boolean {
+		let condaExePath = this.getCondaExePath(pythonPath);
 		// eslint-disable-next-line no-sync
 		return fs.existsSync(condaExePath);
 	}
@@ -753,6 +754,25 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 		let pythonExe = JupyterServerInstallation.getPythonExePath(pathSetting);
 		// eslint-disable-next-line no-sync
 		return fs.existsSync(pythonExe);
+	}
+
+	public async getCondaVirtualEnv(pythonPath: string): Promise<string[]> {
+		if (!this.isCondaInstalled(pythonPath)) {
+			return [];
+		}
+
+		let condaExe = this.getCondaExePath(pythonPath);
+		let cmdResult = await this.executeBufferedCommand(`${condaExe} env list --json`);
+		let envInfo = JSON.parse(cmdResult) as { envs: string[] };
+
+		let environments: string[] = [];
+		// First entry is always the default environment, so skip over it
+		for (let i = 1; i < envInfo.envs.length; i++) {
+			let fullPath = envInfo.envs[i];
+			let envName = fullPath.substring(fullPath.lastIndexOf(path.sep) + 1);
+			environments.push(envName);
+		}
+		return environments;
 	}
 
 	/**
