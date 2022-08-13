@@ -21,7 +21,7 @@ export class ConfigurePathPage extends BasePage {
 	private newInstallButton: azdata.RadioButtonComponent;
 	private existingInstallButton: azdata.RadioButtonComponent;
 	private virtualEnvDropdown: azdata.DropDownComponent;
-	private virtualEnvLoader: azdata.LoadingComponent;
+	private dropdownContainer: azdata.DivContainer;
 
 	private selectInstallEnabled: boolean;
 	private usingCustomPath: boolean = false;
@@ -116,6 +116,7 @@ export class ConfigurePathPage extends BasePage {
 				editPathContainer.display = 'none';
 				selectInstallContainer.display = 'block';
 				this.selectInstallEnabled = true;
+				this.dropdownContainer.display = 'block';
 			});
 			selectInstallContainer.display = 'none';
 
@@ -129,25 +130,28 @@ export class ConfigurePathPage extends BasePage {
 			title: localize('configurePython.virtualEnvironments', "Virtual Environments"),
 			component: this.virtualEnvDropdown
 		}]).component();
-		this.virtualEnvLoader = this.view.modelBuilder.loadingComponent().withItem(dropdownForm).component();
-		let dropdownContainer = this.view.modelBuilder.divContainer().withItems([this.virtualEnvLoader]).component();
-		dropdownContainer.display = 'none';
+		let virtualEnvLoader = this.view.modelBuilder.loadingComponent().withItem(dropdownForm).withProps({ loading: true }).component();
+		this.dropdownContainer = this.view.modelBuilder.divContainer().withItems([virtualEnvLoader]).component();
+		if (!this.selectInstallEnabled) {
+			this.dropdownContainer.display = 'none';
+		}
 		this.pythonLocationDropdown.onValueChanged(async value => {
-			this.virtualEnvLoader.loading = true;
+			virtualEnvLoader.loading = true;
 			try {
 				let selection = this.pythonLocationDropdown.values[value.index] as azdata.CategoryValue;
-				let environments = await this.model.installation.getCondaVirtualEnv(selection.name);
-				this.virtualEnvDropdown.values = environments;
-				if (environments.length > 0) {
-					dropdownContainer.display = 'block';
+				let environments = await this.model.installation.getCondaVirtualEnv(selection?.name);
+				if (environments.length === 0) {
+					this.virtualEnvDropdown.values = ['None'];
+					this.virtualEnvDropdown.enabled = false;
 				} else {
-					dropdownContainer.display = 'none';
+					this.virtualEnvDropdown.values = environments;
+					this.virtualEnvDropdown.enabled = true;
 				}
 			} finally {
-				this.virtualEnvLoader.loading = false;
+				virtualEnvLoader.loading = false;
 			}
 		});
-		allParentItems.push(dropdownContainer);
+		allParentItems.push(this.dropdownContainer);
 
 
 		let parentContainer = this.view.modelBuilder.flexContainer()
@@ -169,7 +173,7 @@ export class ConfigurePathPage extends BasePage {
 	}
 
 	public async onPageLeave(): Promise<boolean> {
-		if (this.pythonDropdownLoader.loading || this.virtualEnvLoader.loading) {
+		if (this.pythonDropdownLoader.loading) {
 			return false;
 		}
 		if (this.selectInstallEnabled) {

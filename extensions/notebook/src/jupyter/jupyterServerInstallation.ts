@@ -794,6 +794,10 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 		return userPath ? userPath : JupyterServerInstallation.DefaultPythonLocation;
 	}
 
+	public get virtualEnvironmentName(): string | undefined {
+		return this._virtualEnvName;
+	}
+
 	public static getVirtualEnvSetting(): string {
 		let virtualEnvName: string;
 		let notebookConfig = vscode.workspace.getConfiguration(constants.notebookConfigKey);
