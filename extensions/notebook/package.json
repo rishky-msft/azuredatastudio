@@ -44,6 +44,11 @@
           "default": false,
           "description": "%notebook.useExistingPython.description%"
         },
+        "notebook.virtualEnvironment": {
+          "type": "boolean",
+          "default": "",
+          "description": "%notebook.virtualEnvironment.description%"
+        },
         "notebook.dontPromptPythonUpdate": {
           "type": "boolean",
           "default": false,
