@@ -115,8 +115,8 @@ export class ConfigurePathPage extends BasePage {
 			editPathButton.onDidClick(async () => {
 				editPathContainer.display = 'none';
 				selectInstallContainer.display = 'block';
-				this.selectInstallEnabled = true;
 				this.dropdownContainer.display = 'block';
+				this.selectInstallEnabled = true;
 			});
 			selectInstallContainer.display = 'none';
 
@@ -125,7 +125,7 @@ export class ConfigurePathPage extends BasePage {
 			this.selectInstallEnabled = true;
 		}
 
-		this.virtualEnvDropdown = this.view.modelBuilder.dropDown().component();
+		this.virtualEnvDropdown = this.view.modelBuilder.dropDown().withProps({ values: ['N/A'], value: 'N/A' }).component();
 		let dropdownForm = this.view.modelBuilder.formContainer().withFormItems([{
 			title: localize('configurePython.virtualEnvironments', "Virtual Environments"),
 			component: this.virtualEnvDropdown
@@ -136,19 +136,26 @@ export class ConfigurePathPage extends BasePage {
 			this.dropdownContainer.display = 'none';
 		}
 		this.pythonLocationDropdown.onValueChanged(async value => {
+			if (!value.selected) {
+				return;
+			}
+			this.pythonLocationDropdown.enabled = false;
 			virtualEnvLoader.loading = true;
 			try {
 				let selection = this.pythonLocationDropdown.values[value.index] as azdata.CategoryValue;
 				let environments = await this.model.installation.getCondaVirtualEnv(selection?.name);
 				if (environments.length === 0) {
-					this.virtualEnvDropdown.values = ['None'];
+					this.virtualEnvDropdown.values = ['N/A'];
+					this.virtualEnvDropdown.value = 'N/A';
 					this.virtualEnvDropdown.enabled = false;
 				} else {
 					this.virtualEnvDropdown.values = environments;
+					this.virtualEnvDropdown.value = environments[0];
 					this.virtualEnvDropdown.enabled = true;
 				}
 			} finally {
 				virtualEnvLoader.loading = false;
+				this.pythonLocationDropdown.enabled = true;
 			}
 		});
 		allParentItems.push(this.dropdownContainer);
