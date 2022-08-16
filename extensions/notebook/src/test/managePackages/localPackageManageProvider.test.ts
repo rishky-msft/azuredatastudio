@@ -212,7 +212,7 @@ describe('Manage Package Providers', () => {
 				uninstallCondaPackages: (packages: PythonPkgDetails[]) => { return Promise.resolve(); },
 				executeBufferedCommand: (command: string) => { return Promise.resolve(''); },
 				executeStreamedCommand: (command: string) => { return Promise.resolve(); },
-				getCondaExePath: () => { return ''; },
+				getCondaExePath: () => { return Promise.resolve(''); },
 				pythonExecutable:  '',
 				pythonInstallationPath: '',
 				usingConda: false,
