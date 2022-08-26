@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Component, Inject, ChangeDetectorRef, forwardRef, ComponentFactoryResolver, ViewChild, ViewContainerRef, ElementRef } from '@angular/core';
+import { Component, Inject, ChangeDetectorRef, forwardRef, ViewChild, ViewContainerRef, ElementRef, ComponentFactoryResolver } from '@angular/core';
 import { NotebookModel } from 'sql/workbench/services/notebook/browser/models/notebookModel';
 import * as notebookUtils from 'sql/workbench/services/notebook/browser/models/notebookUtils';
 import { AngularDisposable } from 'sql/base/browser/lifecycle';
@@ -32,10 +32,6 @@ import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo';
 import { localize } from 'vs/nls';
 import * as path from 'vs/base/common/path';
 import { NotebookComponent } from 'sql/workbench/contrib/notebook/browser/notebook.component';
-import { IWebviewService, WebviewContentPurpose } from 'vs/workbench/contrib/webview/browser/webview';
-import { IFrameWebview } from 'vs/workbench/contrib/webview/browser/webviewElement';
-import { transformWebviewThemeVars } from 'vs/workbench/contrib/notebook/browser/view/renderers/webviewThemeMapping';
-import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 
 export const NOTEBOOKEDITOR_SELECTOR: string = 'notebookeditor-component';
 
@@ -45,7 +41,7 @@ export const NOTEBOOKEDITOR_SELECTOR: string = 'notebookeditor-component';
 })
 export class NotebookEditorComponent extends AngularDisposable {
 	@ViewChild('webviewContainer', { read: ViewContainerRef }) webviewContainerRef: ViewContainerRef;
-	@ViewChild('webview', { read: ElementRef }) webviewDiv: ElementRef;
+	@ViewChild('webview', { read: ElementRef }) webview: ElementRef;
 
 	private readonly defaultViewMode = ViewMode.Notebook;
 	private profile: IConnectionProfile;
@@ -75,8 +71,6 @@ export class NotebookEditorComponent extends AngularDisposable {
 		@Inject(IConnectionManagementService) private connectionManagementService: IConnectionManagementService,
 		@Inject(IUndoRedoService) private _undoService: IUndoRedoService,
 		@Inject(forwardRef(() => ComponentFactoryResolver)) private _componentFactoryResolver: ComponentFactoryResolver,
-		@Inject(IWebviewService) private _webviewService: IWebviewService,
-		@Inject(IWorkspaceContextService) private _contextService: IWorkspaceContextService,
 	) {
 		super();
 		this.updateProfile();
@@ -276,19 +270,6 @@ export class NotebookEditorComponent extends AngularDisposable {
 			return;
 		}
 
-		const workspaceFolders = this._contextService.getWorkspace().folders.map(x => x.uri);
-		let webview = this._webviewService.createWebviewElement('webview', {
-			purpose: WebviewContentPurpose.NotebookRenderer,
-			enableFindWidget: false,
-			transformCssVariables: transformWebviewThemeVars,
-		}, {
-			allowMultipleAPIAcquire: true,
-			allowScripts: true,
-			localResourceRoots: workspaceFolders
-		}, undefined) as IFrameWebview;
-		webview.mountTo(this.webviewDiv.nativeElement);
-		this._register(webview);
-
 		// Create notebook component and append it to webview
 		const compFactory = this._componentFactoryResolver.resolveComponentFactory(NotebookComponent);
 		let notebook = this.webviewContainerRef.createComponent(compFactory);
@@ -297,10 +278,7 @@ export class NotebookEditorComponent extends AngularDisposable {
 		notebook.instance._model = this.model;
 		this._register(notebook.instance);
 
-		if (webview.element.contentDocument) {
-			webview.element.contentDocument.appendChild(notebook.location.nativeElement);
-		} else if (webview.element.contentWindow) {
-			webview.element.contentWindow.document.appendChild(notebook.location.nativeElement);
-		}
+		let doc = this.webview.nativeElement.contentDocument || this.webview.nativeElement.contentWindow;
+		doc.body.appendChild(notebook.location.nativeElement);
 	}
 }

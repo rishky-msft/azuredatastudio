@@ -5,9 +5,15 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 <loading-spinner class="editorLoader" [loading]="isLoading" [loadingMessage]="loadingMessage" [loadingCompletedMessage]="loadingCompletedMessage"></loading-spinner>
-<!-- Notebook Component's Web View -->
+
+<!-- Notebook Component -->
 <ng-container #webviewContainer *ngIf="viewMode === ViewMode.Notebook">
-	<div #webview></div>
+	<iframe #webview class="webview" style="border: none; height: 100%; width: 100%;"
+		sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads"
+		allow="clipboard-read; clipboard-write;">
+		<!-- <notebook-component [_views]="views" [_model]="model"></notebook-component> -->
+	</iframe>
 </ng-container>
+
 <!-- Dashboard View -->
 <notebook-view-component *ngIf="viewMode === ViewMode.Views" [views]="views" [notebookMetadata]="views.metadata" [activeView]="activeView" [model]="model"></notebook-view-component>
