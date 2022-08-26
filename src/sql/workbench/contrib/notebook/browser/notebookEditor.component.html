@@ -5,7 +5,9 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 <loading-spinner class="editorLoader" [loading]="isLoading" [loadingMessage]="loadingMessage" [loadingCompletedMessage]="loadingCompletedMessage"></loading-spinner>
-<!-- Notebook View -->
-<notebook-component *ngIf="viewMode === ViewMode.Notebook" [_views]="views" [_model]="model"></notebook-component>
+<!-- Notebook Component's Web View -->
+<ng-container #webviewContainer *ngIf="viewMode === ViewMode.Notebook">
+	<div #webview></div>
+</ng-container>
 <!-- Dashboard View -->
 <notebook-view-component *ngIf="viewMode === ViewMode.Views" [views]="views" [notebookMetadata]="views.metadata" [activeView]="activeView" [model]="model"></notebook-view-component>

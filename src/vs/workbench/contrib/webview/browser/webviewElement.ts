@@ -95,7 +95,7 @@ export class IFrameWebview extends Disposable implements Webview {
 	private readonly _expectedServiceWorkerVersion = 2; // Keep this in sync with the version in service-worker.js
 
 	private _element: HTMLIFrameElement | undefined;
-	protected get element(): HTMLIFrameElement | undefined { return this._element; }
+	public get element(): HTMLIFrameElement | undefined { return this._element; } // {{SQL CARBON EDIT}}
 
 	private _focused: boolean | undefined;
 	public get isFocused(): boolean {
